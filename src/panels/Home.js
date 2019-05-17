@@ -2,9 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Panel, ListItem, Button, Group, Div, Avatar, PanelHeader } from '@vkontakte/vkui';
 
-const Home = ({ id, go, fetchedUser }) => (
+const Home = ({ id, go, fetchedUser,datax }) => (
 	<Panel id={id}>
-		<PanelHeader>Example</PanelHeader>
+		<PanelHeader>Example1</PanelHeader>
 		{fetchedUser &&
 		<Group title="User Data Fetched with VK Connect">
 			<ListItem
@@ -13,7 +13,17 @@ const Home = ({ id, go, fetchedUser }) => (
 			>
 				{`${fetchedUser.first_name} ${fetchedUser.last_name}`}
 			</ListItem>
-		</Group>}
+			{datax &&
+				<ListItem>
+				 	{`USD:${datax.USD.last}`}/BTC <br/>
+					{`AUD:${datax.AUD.last}`}/BTC				
+				</ListItem>
+				
+			}
+			
+			
+		</Group>
+		}
 
 		<Group title="Navigation Example">
 			<Div>

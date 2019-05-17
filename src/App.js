@@ -1,5 +1,6 @@
 import React from 'react';
 import connect from '@vkontakte/vkui-connect';
+import axios from 'axios';
 import { View } from '@vkontakte/vkui';
 import '@vkontakte/vkui/dist/vkui.css';
 
@@ -12,11 +13,23 @@ class App extends React.Component {
 
 		this.state = {
 			activePanel: 'home',
+			history: ['home'],
 			fetchedUser: null,
+			dataFetched:undefined
 		};
 	}
 
+	goBack = () => {
+		const history = [...this.state.history];
+		history.pop();
+		const activePanel = history[history.length - 1];		
+		this.setState({ history, activePanel });
+	  
+	}
+
 	componentDidMount() {
+		axios.get('https://blockchain.info/ticker').then((x)=>this.setState({dataFetched: x.data}))
+
 		connect.subscribe((e) => {
 			switch (e.detail.type) {
 				case 'VKWebAppGetUserInfoResult':
@@ -36,8 +49,8 @@ class App extends React.Component {
 	render() {
 		return (
 			<View activePanel={this.state.activePanel}>
-				<Home id="home" fetchedUser={this.state.fetchedUser} go={this.go} />
-				<Persik id="persik" go={this.go} />
+				<Home id="home" datax={this.state.dataFetched}  fetchedUser={this.state.fetchedUser} go={this.go} />
+				<Persik    id="persik" go={this.go} />
 			</View>
 		);
 	}
