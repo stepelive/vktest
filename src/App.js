@@ -5,7 +5,7 @@ import { View } from '@vkontakte/vkui';
 import '@vkontakte/vkui/dist/vkui.css';
 
 import Home from './panels/Home';
-import Persik from './panels/Persik';
+import Surveys from './panels/Surveys';
 
 class App extends React.Component {
 	constructor(props) {
@@ -15,7 +15,8 @@ class App extends React.Component {
 			activePanel: 'home',
 			history: ['home'],
 			fetchedUser: null,
-			dataFetched:undefined
+			dataFetched:undefined,
+			dataSurveys:undefined
 		};
 	}
 
@@ -28,7 +29,8 @@ class App extends React.Component {
 	}
 
 	componentDidMount() {
-		axios.get('https://blockchain.info/ticker').then((x)=>this.setState({dataFetched: x.data}))
+		axios.get('https://blockchain.info/ticker').then((x)=>this.setState({dataFetched: x.data}));
+		axios.get('https://dev-assistant.com').then((x)=>this.setState({dataSurveys: x.data}));
 
 		connect.subscribe((e) => {
 			switch (e.detail.type) {
@@ -50,7 +52,7 @@ class App extends React.Component {
 		return (
 			<View activePanel={this.state.activePanel}>
 				<Home id="home" datax={this.state.dataFetched}  fetchedUser={this.state.fetchedUser} go={this.go} />
-				<Persik    id="persik" go={this.go} />
+				<Surveys data={JSON.stringify(this.state.dataSurveys)}   id="surveys" go={this.go} />
 			</View>
 		);
 	}
