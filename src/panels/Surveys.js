@@ -1,45 +1,33 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import {Panel, PanelHeader, HeaderButton, Group, Div, ListItem, Button, platform, IOS} from '@vkontakte/vkui';
+import {Panel, Cell, List,  PanelHeader, HeaderButton, Group, platform, IOS} from '@vkontakte/vkui';
 import Icon28ChevronBack from '@vkontakte/icons/dist/28/chevron_back';
 import Icon24Back from '@vkontakte/icons/dist/24/back';
+import Icon28HelpOutline from '@vkontakte/icons/dist/28/help_outline';
 
 const osname = platform();
 
-
-function Surveys(props) {
+function RenderSurveys(props){
 	const surveys = props.surveys;
-	const listItems = surveys.map((survey) =>
-	  <ListItem key={survey.id}>
-		{`${survey.id} : ${survey.description}`}
-	  </ListItem>
+	const go = props.go_survey;
+	var itemList = surveys.map((survey)=>	  		
+	  		<Cell onClick={go} data-survey={survey.id} expandable key={survey.id.toString()} before={<Icon28HelpOutline />}>{survey.title}</Cell>
 	);
-	return (
-	  <listItems>{listItems}</listItems>
-	);
-  }
-
-
-const Persik = ({id,go, data}) => (
+	return <List>{itemList}</List>
+}
+const Surveys = ({id, go, surveys, go_survey}) => (
 	<Panel id={id}>
 		<PanelHeader
-			left={<HeaderButton onClick={go} data-to="home">
+			left={<HeaderButton onClick={go} data-to="surveys">
 				{osname === IOS ? <Icon28ChevronBack/> : <Icon24Back/>}
-			</HeaderButton>}
-		>
-			Rates
+			</HeaderButton>}>
+			Список отпросов
 		</PanelHeader>
-		
-		<Group title="Опросы">
-		
-			<Surveys surveys={data} ></Surveys>	
-		</Group>
+		{surveys &&
+		<Group title="Доступные опросы">			
+			<RenderSurveys go_survey={go_survey} surveys={surveys} go={go}></RenderSurveys>	
+  		</Group>
+		}		
 	</Panel>
 );
 
-Persik.propTypes = {
-	id: PropTypes.string.isRequired,
-	go: PropTypes.func.isRequired,
-};
-
-export default Persik;
+export default Surveys;
