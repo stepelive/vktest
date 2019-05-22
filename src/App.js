@@ -1,30 +1,49 @@
 import React from 'react';
 import connect from '@vkontakte/vkui-connect';
-import axios from 'axios';
-import { View} from '@vkontakte/vkui';
+import { View, ScreenSpinner} from '@vkontakte/vkui';
 import '@vkontakte/vkui/dist/vkui.css'
 import Surveys from './panels/Surveys';
 import Questions from './panels/Questions'
-
+import Debug from './panels/Debug'
+import axios from 'axios'
+import { extname } from 'path';
 class App extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			activePanel: 'surveys',
+			activePanel: 'debug',
 			history: ['surveys'],
+			user:undefined,
 			dataSurveys:undefined,
 			activeSurvey:undefined,
 			activeQuestion:undefined,
-			answers:[]
+			additional:undefined,
+			answers:[],
+			requestAwaiter:<ScreenSpinner/>
 		};
 	}
 	componentDidMount() {
 		//axios.get('https://web20190521031103.azurewebsites.net/').then((x)=>this.setState({dataSurveys: x.data}));
-
-		this.setState({dataSurveys: [
+		connect.subscribe((e) => {
+			switch (e.detail.type) {
+				case 'VKWebAppGetUserInfoResult':
+					this.getSurveys(e.detail.data);
+					break;
+				default:
+					console.log(e.detail.type);
+			}
+		});
+		connect.send('VKWebAppGetUserInfo', {});
+	}
+	getSurveys = (userInfo)=>{
+		
+		axios.get('https://vk.com/foaf.php', {id:94625852}).then((resp)=>{
+			this.setState({additional:`Additional: ${resp}`});
+		}).catch((ex)=>{this.setState({additional:`Exception: ${JSON.stringify(ex.response)}`});});
+		this.setState({user:userInfo, requestAwaiter:null, dataSurveys: [
 			{
 			  "title": "Тестовый опрос",
-			  "description": "Ну просто тестовый опрос,чо",
+			  "description": "Ну просто тестовый опрос,чsо",
 			  "questions": [
 				{
 				  "position": 1,
@@ -43,7 +62,7 @@ class App extends React.Component {
 					"position": 2,
 					"price": 5.0,
 					"title": "Вы что?",
-					"type": "checkbox",
+					"type": "radio",
 					"avilableAnswers": [
 					  { "title": "123123", "questionId": 1, "question": null, "id": 4 },
 					  { "title": "3213", "questionId": 1, "question": null, "id": 5},
@@ -69,27 +88,19 @@ class App extends React.Component {
 			  "id": 0
 			}
 		  ]});
-		connect.subscribe((e) => {
-			switch (e.detail.type) {
-				case 'VKWebAppGetUserInfoResult':
-					this.setState({ fetchedUser: e.detail.data });
-					break;
-				default:
-					console.log(e.detail.type);
-			}
-		});
-		connect.send('VKWebAppGetUserInfo', {});
+		console.log(userInfo);
+		
 	}
 	survey = (e) => {
 
 
-		var activeSurvey = this.state.dataSurveys.filter((s)=>{
+		var activeSurvey = this.state.dataSurveys.find((s)=>{
 			return s.id == e.currentTarget.dataset.survey;
 		});
-		var activeQuestion = activeSurvey[0].questions[0];
+		var activeQuestion = activeSurvey.questions[0];
 		console.log(activeSurvey);
 
-		this.setState({activePanel: 'survey', activeQuestion:activeQuestion, activeSurvey:activeSurvey[0]})
+		this.setState({activePanel: 'survey', activeQuestion:activeQuestion, activeSurvey:activeSurvey})
 	}
 	setAnswer = (e) =>{
 		var answers = this.state.answers;
@@ -115,17 +126,21 @@ class App extends React.Component {
 			answers: this.state.answers
 		}
 		console.log(model);
-		this.nextQuestion();
+		this.setState({requestAwaiter:<ScreenSpinner/>});
+		//Send to server...
+		setTimeout(()=>{
+			this.nextQuestion();
+		}, 500)
 	}
+	
 	nextQuestion = () =>{
 		var currentQuestionIndex = this.state.activeSurvey.questions.indexOf(this.state.activeQuestion);
 		var next = this.state.activeSurvey.questions[currentQuestionIndex+1];
 		if(next == undefined){
-			this.setState({ activePanel:'surveys' })
+			this.setState({ activePanel:'surveys', answers:[], requestAwaiter:null})
 		}
 		else{
-
-			this.setState({ activeQuestion: next})
+			this.setState({ activeQuestion: next,answers:[], requestAwaiter:null})
 		}
 	}
 
@@ -135,9 +150,10 @@ class App extends React.Component {
 
 	render() {
 		return (
-			<View activePanel={this.state.activePanel}>
-				<Surveys  id="surveys" go={this.go} surveys={this.state.dataSurveys} go_survey={this.survey}   />
-				<Questions id="survey" go={this.go} nextQuestion={this.nextQuestion} setAnswer={this.setAnswer} sendAnswer={this.sendAnswers} activeQuestion={this.state.activeQuestion} activeSurvey={this.state.activeSurvey}></Questions>
+			<View popout={this.state.requestAwaiter} activePanel={this.state.activePanel}>
+				<Debug id="debug" go={this.go} additional={this.state.additional}></Debug>
+				<Surveys  id="surveys" go={this.go} surveys={this.state.dataSurveys} user={this.state.user} go_survey={this.survey}   />
+				<Questions id="survey"  go={this.go} nextQuestion={this.nextQuestion} setAnswer={this.setAnswer} sendAnswer={this.sendAnswers} activeQuestion={this.state.activeQuestion} activeSurvey={this.state.activeSurvey}></Questions>
 			</View>
 		);
 	}

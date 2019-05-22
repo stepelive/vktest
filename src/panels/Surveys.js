@@ -14,17 +14,18 @@ function RenderSurveys(props){
 	);
 	return <List>{itemList}</List>
 }
-const Surveys = ({id, go, surveys, go_survey}) => (
+const Surveys = ({id, go, user, surveys, requestAwaiter, go_survey}) => (
 	<Panel id={id}>
 		<PanelHeader
 			left={<HeaderButton onClick={go} data-to="surveys">
 				{osname === IOS ? <Icon28ChevronBack/> : <Icon24Back/>}
 			</HeaderButton>}>
 			Список отпросов
+			
 		</PanelHeader>
 		{surveys &&
-		<Group title="Доступные опросы">			
-			<RenderSurveys go_survey={go_survey} surveys={surveys} go={go}></RenderSurveys>	
+		<Group title={`Доступные опросы ${user &&  user.id}`}>			
+			<RenderSurveys go_survey={go_survey} requestAwaiter={requestAwaiter} surveys={surveys} go={go}></RenderSurveys>	
   		</Group>
 		}		
 	</Panel>
