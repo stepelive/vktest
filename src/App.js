@@ -75,7 +75,7 @@ class App extends React.Component {
 	sendAnswers = () =>{
 		this.setState({requestAwaiter:<ScreenSpinner/>});
 		var answerCount = this.state.answers.length;
-		var userId = this.state.user.id;
+		// eslint-disable-next-line
 		this.state.answers.forEach((x)=>{
 			var model = {
 				userId:1,
@@ -83,6 +83,7 @@ class App extends React.Component {
 			}
 			axios.post(`https://web20190521031103.azurewebsites.net/Home/SetAnswer`, model,{headers:{'Content-Type':'application/json'}}).then((e)=>{
 				answerCount--;			
+				 // eslint-disable-next-line
 				if(answerCount == 0){
 					this.nextQuestion();
 				}			

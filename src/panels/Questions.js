@@ -1,5 +1,5 @@
 import React from 'react';
-import {Panel,List,Button,Radio,Header, Div,Checkbox, PanelHeader, HeaderButton, Group} from '@vkontakte/vkui';
+import {Panel,List,Button,Radio, Div,Checkbox, PanelHeader, HeaderButton, Group} from '@vkontakte/vkui';
 import Icon24BrowserBack from '@vkontakte/icons/dist/24/browser_back';
 
 
@@ -40,8 +40,8 @@ const Questions = ({id, go, sendAnswer, setAnswer, checkAnswer, requestAwaiter, 
         <Group >
 		<Div>{activeQuestion.title}</Div>
 		{activeQuestion.imageSrc &&
-			<img src={activeQuestion.imageSrc} style={{width:'100%'}} />
-			
+			<img src={activeQuestion.imageSrc} alt="da" style={{width:'100%'}} />
+			 // eslint-disable-next-line
 		}
 			<RenderAnswers sender={setAnswer} checker={checkAnswer} question={activeQuestion}></RenderAnswers>			
 			<Div>
