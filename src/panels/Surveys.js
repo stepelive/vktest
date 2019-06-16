@@ -17,15 +17,14 @@ function RenderSurveys(props){
 const Surveys = ({id, go, user, onRefresh, surveys, refreshAwaiter, requestAwaiter, go_survey}) => (
 	<Panel id={id}>
 		<PanelHeader
-			left={<HeaderButton onClick={go} data-to="surveys">
+			left={<HeaderButton onClick={go} data-to="main">
 				{osname === IOS ? <Icon28ChevronBack/> : <Icon24Back/>}
 			</HeaderButton>}>
-			Список отпросов
-			
+			Список отпросов			
 		</PanelHeader>
 		<PullToRefresh onRefresh={onRefresh} isFetching={refreshAwaiter}>
 			{surveys &&
-				<Group title={`Доступные опросы ${user &&  user.id}`}>			
+				<Group title={`Ваши доступные опросы`}>			
 					<RenderSurveys go_survey={go_survey} requestAwaiter={requestAwaiter} surveys={surveys} go={go}></RenderSurveys>	
   				</Group>
 			}		
