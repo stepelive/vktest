@@ -3,6 +3,7 @@ import connect from '@vkontakte/vkui-connect';
 import { View, ScreenSpinner} from '@vkontakte/vkui';
 import '@vkontakte/vkui/dist/vkui.css'
 import Surveys from './panels/Surveys';
+import Slider from './panels/Slider';
 import Questions from './panels/Questions'
 import ProfileQuestions from './panels/ProfileQuestions'
 import Main from './panels/Main'
@@ -22,6 +23,7 @@ class App extends React.Component {
 			additional:undefined,
 			userSurveys:[{da:"net"}],
 			answers:[],
+			stringAnswer:undefined,
 			requestAwaiter:<ScreenSpinner/>,
 			refreshAwaiter:false,
 			activeProfileQuestion:undefined,
@@ -29,6 +31,11 @@ class App extends React.Component {
 			userBallance:0,
 			host : "https://web20190521031103.azurewebsites.net/",
 			messageBox:"",
+			agreement:"",			
+			SliderData:{
+				slideIndex:0,
+				slides:["","",""]
+			}
 		};
 	}
 	componentDidMount() {
@@ -62,7 +69,7 @@ class App extends React.Component {
 
 
 	}
-	//Questions
+	//#region Questions
 	setAnswer = (e) =>{
 		var answers = this.state.answers;
 		if(!e.answer){// eslint-disable-next-line
@@ -75,12 +82,17 @@ class App extends React.Component {
 				answers.splice(index,1);
 			}
 		}
-		else{
+		else{			
+			e.data=Date.now();
 			answers.push(e.id);
 		}
 		this.setState({ answers: answers})	
 	}
+	setStringAnswer = (e) =>{		
+		this.setState({ stringAnswer: e.target.value})
+	}
 	checkAnswer = (e) =>{
+		e.data=Date.now();
 		var answers = [];
 		answers.push(e);		
 		this.setState({ answers: answers})
@@ -91,16 +103,20 @@ class App extends React.Component {
 		// eslint-disable-next-line
 		var t = this;
 		var userId = this.state.user.id;
+		
 		this.state.answers.forEach((x)=>{
 			var model ={
+				date:Date.now(),
 				UserId:userId,
 				AnswerId:x
 			};
+			
 			axios.post(`${this.state.host}/Home/SetAnswer`, model,{headers:{'Content-Type':'application/json'}}).then((e)=>{
 				answerCount--;			
 				 // eslint-disable-next-line
 				var questionPrice = t.state.activeQuestion.price;
 				t.setState({userBallance:t.state.userBallance + questionPrice});
+				 // eslint-disable-next-line
 				 if(answerCount == 0){
 					this.nextQuestion();
 				}	
@@ -112,8 +128,60 @@ class App extends React.Component {
 
 		})
 	}
+	//#endregion Questions
+	checkAgreement = () => {		
+		/* Проверка на пользовательское соглашение */
+		axios.post(`${this.state.host}/Home/GetUserIsConfirm`,this.state.user,
+			{headers:{'Content-Type':'application/json'}}).then((e)=>{	
+				
+				if(e.data.isConfirm){
+					this.refreshSurveys();
+				}
+				else{
+					this.getAgreement();
+				}
+		}).catch((ex)=>{
+			this.getAgreement();			
+		});
+	}
+
+	showErrorMessage = (message) => {
+		this.setState({additional: message,activePanel: 'debug'});
+	}
+	//#region Agreement
+	//Получаем пользовательское соглашение
+	getAgreement = () => {
+		axios.post(`${this.state.host}/Home/GetUserAgreement`,this.state.user,{headers:{'Content-Type':'application/json'}}).then((e)=>{
+			this.setState({additional:`Resp: ${JSON.stringify(e)}`, agreement:e.data.agreement});
+
+		}).catch((ex)=>{
+			this.showErrorMessage(JSON.stringify(ex));
+		});
+	}
+	//Подтверждаем пользовательское соглашение
+	confirmAgreement = () => {
+		this.refreshSurveys();
+	}
+	//#endregion Agreement
+	//#region InstructionSlide
+	showInstruction = () =>	{
+
+	}
+	ChangeSlide = (next) => {
+		var currentSlideData = this.state.SliderData;
+		if(next == currentSlideData.slides.length){
+			currentSlideData.slideIndex = 0;
+			this.setState({ activePanel: "main" , SliderData:currentSlideData});
+		}
+		else{
+			currentSlideData.slideIndex = next;
+			this.setState({SliderData:currentSlideData});
+		}
+	}
+	//#endregion InstructionSlide
 	refreshSurveys = () =>{
 		this.setState({refreshAwaiter:true})
+		/* Получение доступных опросов */
 		axios.post(`${this.state.host}/Home/GetSurveys`,this.state.user,
 			{headers:{'Content-Type':'application/json'}}).then((e)=>{						
 			this.afterRequest();		 
@@ -121,15 +189,12 @@ class App extends React.Component {
 		}).catch((ex)=>{
 			this.afterRequest();
 			this.setState({additional:`Exception: ${JSON.stringify(ex)}`});
-		});	
-
-		axios.post(`${this.state.host}/Home/GetUserAgreement`,this.state.user,{headers:{'Content-Type':'application/json'}}).then((e)=>{
-			this.setState({additional:`Resp: ${JSON.stringify(e)}`});
-
-		}).catch((ex)=>{
-			this.afterRequest();
-			this.setState({additional:`Exception: ${JSON.stringify(ex)}`});
 		});
+
+		
+
+
+		
 		axios.post(
 			`${this.state.host}/Home/GetProfileSurveys`,this.state.user,
 			{headers:{'Content-Type':'application/json'}}).then((e)=>{						
@@ -151,17 +216,30 @@ class App extends React.Component {
 	}
 	
 	nextQuestion = () =>{
+		if(this.state.stringAnswer != undefined){
+			var userId = this.state.user.id;
+			var model ={
+				date:Date.now(),
+				UserId:userId,
+				EmptyAnswer:this.state.stringAnswer
+			};	
+			axios.post(`${this.state.host}/Home/SetAnswer`, model,{headers:{'Content-Type':'application/json'}}).then((e)=>{
+				
+			});
+		}
+
 		var currentQuestionIndex = this.state.activeSurvey.questions.indexOf(this.state.activeQuestion);		
 		var next = this.state.activeSurvey.questions[currentQuestionIndex+1];// eslint-disable-next-line
-		var sur = this.state.activeSurvey;
+		var sur = this.state.activeSurvey; 
 		sur.questions.splice(currentQuestionIndex, 1);
+		// eslint-disable-next-line
 		if(next == undefined){
 			var avilableSurveys = this.state.dataSurveys;
 			avilableSurveys.splice( avilableSurveys.indexOf(this.state.activeSurvey), 1);
-			this.setState({ activePanel:'surveys', dataSurveys:avilableSurveys, answers:[], requestAwaiter:false})
+			this.setState({ activePanel:'surveys', dataSurveys:avilableSurveys, answers:[], stringAnswer:undefined, requestAwaiter:false})
 		}
 		else{
-			this.setState({ activeSurvey:sur, activeQuestion: next,answers:[], requestAwaiter:false})
+			this.setState({ activeSurvey:sur, activeQuestion: next,answers:[], stringAnswer:undefined, requestAwaiter:false})
 		}
 	}
 	//Profile Questions
@@ -204,7 +282,8 @@ class App extends React.Component {
 		this.state.profileAnswers.forEach((x)=>{
 			var model ={
 				userId:userId,
-				answerId:x
+				answerId:x,
+				date:Date.now()
 			};
 			axios.post(`${this.state.host}/Home/SetProfileAnswer`, model,{headers:{'Content-Type':'application/json'}}).then((e)=>{
 				answerCount--;			
@@ -238,10 +317,6 @@ class App extends React.Component {
 			this.setState({ activeProfileQuestion: next,profileAnswers:[], requestAwaiter:false})
 		}
 	}
-
-
-
-
 	afterRequest = () =>{
 		this.setState({requestAwaiter:null,refreshAwaiter:false})
 	}
@@ -260,10 +335,9 @@ class App extends React.Component {
 				<Profile  id="profile" ballance={this.state.userBallance} go={this.go} go_userSurvey={this.userSurvey} user={this.state.user} userSurveys={this.state.userSurveys} />
 				<Surveys  id="surveys" go={this.go} onRefresh={this.refreshSurveys} refreshAwaiter={this.state.refreshAwaiter} surveys={this.state.dataSurveys} user={this.state.user} go_survey={this.survey}   />
 				<Questions id="survey"  go={this.go} checkAnswer={this.checkAnswer} nextQuestion={this.nextQuestion} setAnswer={this.setAnswer} sendAnswer={this.sendAnswers} activeQuestion={this.state.activeQuestion} activeSurvey={this.state.activeSurvey}></Questions>
-				<ProfileQuestions id="profileQuestions" go={this.go} checkAnswer={this.checkProfileAnswer} nextQuestion={this.nextProfileQuestion} setAnswer={this.setProfileAnswer} sendAnswer={this.sendProfileAnswers} activeQuestion={this.state.activeProfileQuestion}></ProfileQuestions>
+				<ProfileQuestions stringAnswer={this.setStringAnswer} id="profileQuestions" go={this.go} checkAnswer={this.checkProfileAnswer} nextQuestion={this.nextProfileQuestion} setAnswer={this.setProfileAnswer} sendAnswer={this.sendProfileAnswers} activeQuestion={this.state.activeProfileQuestion}></ProfileQuestions>
 				<Debug id="debug" go={this.go} info={this.state.additional}></Debug>
-			
-			
+				<Slider  id="slider" ChangeSlide={this.ChangeSlide} SliderData={this.state.SliderData}></Slider>	
 			</View>
 		);
 	}

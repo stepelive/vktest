@@ -15,6 +15,7 @@ const Main = ({id, go, user, onRefresh, surveys, userSurveys, refreshAwaiter, re
 					{surveys &&
 			<Cell  onClick={go} data-to="surveys" indicator={surveys.length}>Опросы</Cell>
 					}
+					<Cell  onClick={go} data-to="slider">Как это работает?</Cell>
 						<Cell onClick={go} data-to="debug">Debug</Cell>
 						
 
