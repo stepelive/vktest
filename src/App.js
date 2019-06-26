@@ -1,12 +1,13 @@
 import React from 'react';
 import connect from '@vkontakte/vkui-connect';
-import { View, ScreenSpinner} from '@vkontakte/vkui';
+import { View, ScreenSpinner,Alert, Group,List, ListItem,Div, ActionSheet, ActionSheetItem, PopoutWrapper } from '@vkontakte/vkui';
 import '@vkontakte/vkui/dist/vkui.css'
 import Surveys from './panels/Surveys';
 import Slider from './panels/Slider';
 import Questions from './panels/Questions'
 import ProfileQuestions from './panels/ProfileQuestions'
 import Main from './panels/Main'
+import Agreement from './panels/Agreement'
 import Debug from './panels/Debug'
 import Profile from './panels/Profile'
 import axios from 'axios'
@@ -38,13 +39,16 @@ class App extends React.Component {
 			}
 		};
 	}
+	showAgreement = () => {
+		this.setState({activePanel:'agreement'}); 
+	}
 	componentDidMount() {
-		//axios.get('https://web20190521031103.azurewebsites.net/').then((x)=>this.setState({dataSurveys: x.data}));
+		//axios.get('https://web20190521031103.azurewebsites.net/' ).then((x)=>this.setState({dataSurveys: x.data}));
 		connect.subscribe((e) => {
 			switch (e.detail.type) {
 				case 'VKWebAppGetUserInfoResult':
 					this.setState({user:e.detail.data})
-					this.refreshSurveys();
+					this.checkAgreement();
 					break;
 				default:
 					console.log(e.detail.type);
@@ -131,38 +135,48 @@ class App extends React.Component {
 	//#endregion Questions
 	checkAgreement = () => {		
 		/* Проверка на пользовательское соглашение */
-		axios.post(`${this.state.host}/Home/GetUserIsConfirm`,this.state.user,
+		try{
+			axios.post(`${this.state.host}/Home/GetUserAgreement`,this.state.user,
 			{headers:{'Content-Type':'application/json'}}).then((e)=>{	
 				
-				if(e.data.isConfirm){
-					this.refreshSurveys();
+				if(e.data.agreement){
+					this.setState({additional:`Resp: ${JSON.stringify(e)}`, agreement:e.data.agreement, requestAwaiter:null,refreshAwaiter:false});	
+					this.showAgreement();
 				}
-				else{
-					this.getAgreement();
+				else if (e.data == false){
+					this.setState({additional:`Resp: ${JSON.stringify(e)}`});
+					this.refreshSurveys();	
 				}
 		}).catch((ex)=>{
-			this.getAgreement();			
+			this.setState({additional:`Resp: ${JSON.stringify(ex)}`, requestAwaiter:null,refreshAwaiter:false});
+						
 		});
+		}
+		catch(exception){
+			this.setState({additional:`Resp: ${JSON.stringify(exception)}`, requestAwaiter:null,refreshAwaiter:false});
+		}
 	}
 
 	showErrorMessage = (message) => {
 		this.setState({additional: message,activePanel: 'debug'});
 	}
 	//#region Agreement
-	//Получаем пользовательское соглашение
-	getAgreement = () => {
-		axios.post(`${this.state.host}/Home/GetUserAgreement`,this.state.user,{headers:{'Content-Type':'application/json'}}).then((e)=>{
-			this.setState({additional:`Resp: ${JSON.stringify(e)}`, agreement:e.data.agreement});
-
-		}).catch((ex)=>{
-			this.showErrorMessage(JSON.stringify(ex));
-		});
-	}
+	//Получаем пользовательское соглашение	
 	//Подтверждаем пользовательское соглашение
 	confirmAgreement = () => {
-		this.refreshSurveys();
+		axios.post(`${this.state.host}/Home/SubmitUserAgreement`,this.state.user,
+			{headers:{'Content-Type':' application/json'}}).then((e)=>{		
+				this.setState({activePanel:'main'});
+				this.setState({agreement:null});
+				this.refreshSurveys();	  	
+			}).catch((ex)=>{			
+				this.setState({additional:JSON.stringify(ex),activePanel:'main'});			
+		});
 	}
-	//#endregion Agreement
+
+		
+		
+	//#endregion Agreement 
 	//#region InstructionSlide
 	showInstruction = () =>	{
 
@@ -181,7 +195,7 @@ class App extends React.Component {
 	//#endregion InstructionSlide
 	refreshSurveys = () =>{
 		this.setState({refreshAwaiter:true})
-		/* Получение доступных опросов */
+		/* Получение доступных   опросов */
 		axios.post(`${this.state.host}/Home/GetSurveys`,this.state.user,
 			{headers:{'Content-Type':'application/json'}}).then((e)=>{						
 			this.afterRequest();		 
@@ -294,13 +308,13 @@ class App extends React.Component {
 			}).catch((ex)=>{
 				this.afterRequest();
 				this.setState({activePanel:'debug', additional:`Exception: ${JSON.stringify(ex)}`});
-			});	;
+			});
 
 		})
 		/*var answers = this.state.profileAnswers.map((x)=>{
 			return{
 				userId:userId,
-				ProfileAnswerId:x
+				ProfileAnswerId:x  
 			}	
 		});
 		this.setState({ activePanel:'debug', additional:JSON.stringify(answers)});*/
@@ -327,11 +341,12 @@ class App extends React.Component {
 	go = (e) => {
 		this.setState({ activePanel: e.currentTarget.dataset.to })
 	};	
-
+	
 	render() {
 		return (
-			<View popout={this.state.requestAwaiter} activePanel={this.state.activePanel}>
-				<Main id="main" go={this.go} onRefresh={this.refreshSurveys} refreshAwaiter={this.state.refreshAwaiter} surveys={this.state.dataSurveys} userSurveys={this.state.userSurveys} user={this.state.user}></Main>
+			<View popout={this.state.requestAwaiter} activePanel={this.state.activePanel}>				
+				<Main id="main"  go={this.go} onRefresh={this.refreshSurveys} refreshAwaiter={this.state.refreshAwaiter} surveys={this.state.dataSurveys} userSurveys={this.state.userSurveys} user={this.state.user}></Main>
+				<Agreement id="agreement" Agreement={this.state.agreement} Accept={this.confirmAgreement}></Agreement>
 				<Profile  id="profile" ballance={this.state.userBallance} go={this.go} go_userSurvey={this.userSurvey} user={this.state.user} userSurveys={this.state.userSurveys} />
 				<Surveys  id="surveys" go={this.go} onRefresh={this.refreshSurveys} refreshAwaiter={this.state.refreshAwaiter} surveys={this.state.dataSurveys} user={this.state.user} go_survey={this.survey}   />
 				<Questions id="survey"  go={this.go} checkAnswer={this.checkAnswer} nextQuestion={this.nextQuestion} setAnswer={this.setAnswer} sendAnswer={this.sendAnswers} activeQuestion={this.state.activeQuestion} activeSurvey={this.state.activeSurvey}></Questions>

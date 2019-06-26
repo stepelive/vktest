@@ -1,10 +1,11 @@
 import React from 'react';
-import {Panel, Group, Gallery, Div, Button} from '@vkontakte/vkui';
+import {Panel, Group,PanelHeader, Gallery, Div, Button} from '@vkontakte/vkui';
 const Slider = ({id, ChangeSlide, SliderData }) => (
 	<Panel id={id}>
-		
-               
-			<Group title="Инструкция">
+		 <PanelHeader>
+			Как это работает?
+		  </PanelHeader>               
+			<Group>
               <Gallery
                 slideWidth="100%" 
                 align="center"
