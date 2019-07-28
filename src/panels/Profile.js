@@ -1,5 +1,5 @@
 import React from 'react';
-import {Panel, Cell, List, Avatar, PanelHeader, PullToRefresh,HeaderButton,platform, IOS} from '@vkontakte/vkui';
+import {Panel, Cell, List, Avatar, PanelHeader, Button, PullToRefresh,HeaderButton,platform, IOS} from '@vkontakte/vkui';
 import Icon28ChevronBack from '@vkontakte/icons/dist/28/chevron_back';
 import Icon24Back from '@vkontakte/icons/dist/24/back';
 import Icon28HelpOutline from '@vkontakte/icons/dist/28/help_outline';
@@ -24,10 +24,12 @@ const Profile = ({id, go,user, onRefresh,ballance, go_userSurvey, userSurveys, r
 		</PanelHeader>
 		{user &&
 		<Cell
-		photo={user.photo_max_orig} description={`Ваш баланс: ${ballance} р`}  before={<Avatar src={user.photo_max_orig} size={80}/>}	size="l">
+		photo={user.photo_max_orig} description={`Ваш баланс: ${ballance} баллов`}  before={<Avatar src={user.photo_max_orig} size={80}/>}	size="l">
 				{user.first_name} {user.last_name}
+				
 	  		</Cell>
-
+			  
+				  
 
 		}
 		
