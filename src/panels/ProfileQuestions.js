@@ -12,7 +12,6 @@ function WriteAnswer(orig, e, sender){
 	var result = sender(answer);
 }
 function StringAnswer(orig, stringAnswer){
-	var value = orig;
 	stringAnswer(orig);
 }
 function RenderAnswers(props){

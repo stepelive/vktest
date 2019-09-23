@@ -1,5 +1,5 @@
 import React from 'react';
-import {Panel,List,Button,Radio, Div,Checkbox, PanelHeader, HeaderButton, Group} from '@vkontakte/vkui';
+import {Panel,List,Button,Radio, Slider, Div,Checkbox, PanelHeader, HeaderButton, Group} from '@vkontakte/vkui';
 import Icon24BrowserBack from '@vkontakte/icons/dist/24/browser_back';
 
 
@@ -15,11 +15,15 @@ function RenderAnswers(props){
 	const answers = props.question.avilableAnswers;
 	const sender = props.sender;
 	const checker = props.checker;
+	const sliderAnswer = props.sliderAnswer;
 	var listItem;// eslint-disable-next-line
 	if(props.question.type == 'checkbox'){
 		listItem = answers.map((e)=>
 		<Checkbox onChange={(orig) => WriteAnswer(orig,e,sender)} key={e.id.toString()}>{e.title}</Checkbox>
 	);
+	}
+	else if(props.question.type === "slider"){		
+			return	<Slider	min={0}	max={10} 	step={1}	onChange={value1 => sliderAnswer(value1)} />	
 	}
 	else{
 		listItem = answers.map((e)=>
@@ -29,7 +33,7 @@ function RenderAnswers(props){
 	return <List>{listItem}</List>
 }
 
-const Questions = ({id, go, sendAnswer, setAnswer, checkAnswer, requestAwaiter, activeQuestion ,activeSurvey}) => (
+const Questions = ({id, go, sendAnswer, radioAnswer, checkboxAnswer, sliderAnswer, requestAwaiter, activeQuestion ,activeSurvey}) => (
 	<Panel id={id}>
 		<PanelHeader
 			left={<HeaderButton onClick={go} data-to="surveys">
@@ -43,7 +47,7 @@ const Questions = ({id, go, sendAnswer, setAnswer, checkAnswer, requestAwaiter, 
 			<img src={activeQuestion.imageSrc} alt="da" style={{width:'100%'}} />
 			 // eslint-disable-next-line
 		}
-			<RenderAnswers sender={setAnswer} checker={checkAnswer} question={activeQuestion}></RenderAnswers>			
+			<RenderAnswers sender={radioAnswer} sliderAnswer={sliderAnswer} checker={checkboxAnswer} question={activeQuestion}></RenderAnswers>			
 			<Div>
        			<Button size="xl" onClick={sendAnswer} level="primary">Следующий вопрос</Button>
      		</Div>
