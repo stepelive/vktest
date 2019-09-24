@@ -12,23 +12,21 @@ function RenderSurveys(props){
 	var itemList = surveys.map((survey)=>	  		
 	  		<Cell onClick={go} data-survey={survey.title} expandable key={survey.id} before={<Icon28HelpOutline />}>{survey.title}</Cell>
 	);
-	return <List>{itemList}</List>
+	return itemList;
 }
 const Surveys = ({id, go, user, onRefresh, surveys, refreshAwaiter, requestAwaiter, go_survey}) => (
 	<Panel id={id}>
-		<PanelHeader
-			left={<HeaderButton onClick={go} data-to="main">
-				{osname === IOS ? <Icon28ChevronBack/> : <Icon24Back/>}
-			</HeaderButton>}>
-			Список отпросов			
+		<PanelHeader>	
+			Список отпросов	
 		</PanelHeader>
-		<PullToRefresh onRefresh={onRefresh} isFetching={refreshAwaiter}>
-			{surveys &&
-				<Group title={`Ваши доступные опросы`}>			
-					<RenderSurveys go_survey={go_survey} requestAwaiter={requestAwaiter} surveys={surveys} go={go}></RenderSurveys>	
-  				</Group>
+		<Group title="Оплачиваемые опросы">
+		{surveys &&	
+					<RenderSurveys go_survey={go_survey} requestAwaiter={requestAwaiter} surveys={surveys} go={go}></RenderSurveys>  				
 			}		
+		<PullToRefresh onRefresh={onRefresh} isFetching={refreshAwaiter}>
+			
 		</PullToRefresh>
+		</Group>
 	</Panel>
 );
 
