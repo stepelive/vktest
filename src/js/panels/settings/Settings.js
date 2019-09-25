@@ -18,6 +18,9 @@ const Settings = ({id }) => (
 );
 
 export default Settings;
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> c7490047f65e5aee2dd21479f9603d8ee95d6d39
