@@ -1,5 +1,5 @@
 import React from 'react';
-import {Panel, Group,PanelHeader, Gallery, Div, Button} from '@vkontakte/vkui';
+import {Panel, Group,PanelHeader,  Div, Button} from '@vkontakte/vkui';
 const Agreement = ({id, Accept, Agreement }) => (
 	<Panel id={id}>	
       <PanelHeader>
