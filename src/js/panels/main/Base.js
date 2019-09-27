@@ -5,8 +5,8 @@ import {
 } from '@vkontakte/vkui';
 import '@vkontakte/vkui/dist/vkui.css'
 const size = {
-	x: window.innerWidth,
-	y: window.innerHeight * 0.9,
+	x: 390,
+	y: 900
 }
 const layerStyle = {
 	backgroundColor: 'rgba(248, 247, 216, 0.1)',
@@ -26,20 +26,15 @@ const interestsStyle = {
 
 }
 const circleStyle = {
-	width: size.x,
-	height: size.y,
 	position:'absolute',
 	backgroundColor:'#fff',
 	backgroundPosition: 'top',
-	transformOrigin: `center ${size.y * 2}px`
 }
 const UserPicStyle = {
 	backgroundSize: 'contain',
 	backgroundRepeat: 'no-repeat',
 	overflow: 'hidden',
 	backgroundPosition: 'center',
-	height: size.y - 300,
-	width: size.x,
 	margin: 0,
 	padding: 0
 }
@@ -97,9 +92,9 @@ class Cards extends React.Component {
 			debugInfo: '',
 			limitOffset: 30,
 			userPicBackgroundColor: '',
-			sizeX: size.x,
-			sizeY: size.y,
-			halfX: size.x / 20,
+			sizeX: 390,
+			sizeY: 900,
+			halfX: 390 / 20,
 			minchange: 2
 		}
 		this.startX = 0;
@@ -113,6 +108,7 @@ class Cards extends React.Component {
 
 
 	componentDidMount() {
+		this.setState({ sizeX: window.innerWidth, sizeY:window.innerHeight });		  
 	}
 
 	onMove(e) {
@@ -208,7 +204,7 @@ class Cards extends React.Component {
 	};
 
 	render() { // eslint-disable-next-line
-		const { id, debugServerInfo, refreshUsers, users, moveBack, debugInfo, userPicBackgroundColor, rot } = this.state;
+		const { id, debugServerInfo, refreshUsers, users,sizeX, sizeY,  moveBack, debugInfo, userPicBackgroundColor, rot } = this.state;
 		return (
 			<Panel id={id} style={{overflow:'hidden'}}>
 				<PanelHeader>{debugServerInfo}</PanelHeader>
@@ -220,11 +216,11 @@ class Cards extends React.Component {
 							onMove={this.onMove}
 							onEnd={this.onEnd}
 
-							style={{ ...circleStyle, transition: moveBack?'none':`transform .05s ease-out`, transform: `rotate(${rot}deg)` }}
+							style={{ ...circleStyle, transformOrigin: `center ${sizeY * 2}px`, width: sizeX, height: sizeY, transition: moveBack?'none':`transform .05s ease-out`, transform: `rotate(${rot}deg)` }}
 						>
 							<Div style={{ height: '100%', padding:0 }}>
 								<div style={{ ...layerStyle, backgroundColor: userPicBackgroundColor, }}></div>
-								<Div style={{ ...UserPicStyle, backgroundImage: `url(${users[0].avatar})` }}></Div>
+								<Div style={{ ...UserPicStyle, width:sizeX,	height: sizeY - 300, backgroundImage: `url(${users[0].avatar})` }}></Div>
 								<h1 style={{ textAlign: 'center' }}>
 									<strong>{users[0].first_name} {users[0].last_name}</strong>
 								</h1>
@@ -236,8 +232,8 @@ class Cards extends React.Component {
 					}
 
 					{users.length !== 0 && users[1] != undefined &&
-						<Div style={{padding:0, height: this.state.sizeY }}>
-							<Div style={{ ...UserPicStyle, backgroundImage: `url(${users[1].avatar})` }}></Div>
+						<Div style={{padding:0, height: sizeY }}>
+							<Div style={{ ...UserPicStyle, width:sizeX,	height: sizeY - 300, backgroundImage: `url(${users[1].avatar})` }}></Div>
 							<h1 style={{ textAlign: 'center' }}>
 								<strong>{users[1].first_name} {users[1].last_name}</strong>
 							</h1>

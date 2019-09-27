@@ -25,10 +25,10 @@ class App extends React.Component {
     super(props);
     this.state = {
       debug: true,
-      activeStory: { view: 'cards', panel: 'cards' },
+      activeStory: { view: 'info', panel: 'info' },
       history: [{
-        view: 'cards',
-        panel: 'cards'
+        view: 'info',
+        panel: 'info'
       }],
       user: undefined,
       debugServerInfo: 'default'
@@ -42,7 +42,7 @@ class App extends React.Component {
         case 'VKWebAppGetUserInfoResult':
           this.setState({ user: e.detail.data });
           var t = this;
-          axios.post("https://salert.info/user/GetUserData",  e.detail.data
+          axios.post("https://salert.info/user/GetUserData", e.detail.data
           ).then((x) => {
             t.renderDebug(x.data, false);
           }).catch(function (x) {
@@ -54,11 +54,11 @@ class App extends React.Component {
       }
     });
 
-    
+
     connect.send('VKWebAppGetUserInfo', {});
   }
   renderDebug(str, isCatch) {
-      this.setState({ debugServerInfo: isCatch + JSON.stringify(str), activeStory: { view: 'info', panel: 'info' } });
+    this.setState({ debugServerInfo: isCatch + JSON.stringify(str), activeStory: { view: 'info', panel: 'info' } });
   }
   onStoryChange(e) {
     var c = this.state.activeStory;
@@ -67,6 +67,7 @@ class App extends React.Component {
   }
 
   render() {
+    const {user} = this.state;
 
     return (
       <Epic activeStory={this.state.activeStory.view} tabbar={
@@ -77,13 +78,16 @@ class App extends React.Component {
             data-view="info"
             text="Профиль"
           ><Icon28User /></TabbarItem>
-
+          {user &&
           <TabbarItem
-            onClick={this.onStoryChange}
-            selected={this.state.activeStory.view === 'cards'}
-            data-view="cards"
-            text="Карточки"
-          ><Icon28Users /></TabbarItem>
+          onClick={this.onStoryChange}
+          selected={this.state.activeStory.view === 'cards'}
+          data-view="cards"
+          text="Карточки"
+        ><Icon28Users /></TabbarItem>
+          }
+
+          
 
           <TabbarItem
             onClick={this.onStoryChange}
